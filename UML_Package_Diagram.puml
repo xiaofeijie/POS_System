@@ -1,0 +1,121 @@
+@startuml POS System Package Diagram
+
+!define RECTANGLE class
+
+package "UI Layer" <<layer>> {
+    package "CheckoutUI" {
+        class CheckoutUI
+    }
+    package "ReturnUI" {
+        class ReturnUI
+    }
+}
+
+package "Services Layer" <<layer>> {
+    package "CheckoutService" {
+        class CheckoutService
+    }
+    package "ReturnService" {
+        class ReturnService
+    }
+    package "InventoryService" {
+        class InventoryService
+    }
+    package "PaymentService" {
+        class PaymentService
+    }
+}
+
+package "Storage Layer" <<layer>> {
+    package "ProductStorage" {
+        class ProductStorage
+    }
+    package "OrderStorage" {
+        class OrderStorage
+    }
+    package "InventoryStorage" {
+        class InventoryStorage
+    }
+}
+
+package "Models Layer" <<layer>> {
+    package "Product" {
+        class Product
+    }
+    package "Order" {
+        class Order
+    }
+    package "OrderItem" {
+        class OrderItem
+    }
+}
+
+' Dependencies between layers
+[UI Layer] --> [Services Layer] : depends on
+[Services Layer] --> [Storage Layer] : depends on
+[Services Layer] --> [Models Layer] : depends on
+[Storage Layer] --> [Models Layer] : depends on
+
+' Dependencies within Services Layer
+[CheckoutService] --> [ProductStorage]
+[CheckoutService] --> [OrderStorage]
+[CheckoutService] --> [InventoryService]
+[CheckoutService] --> [PaymentService]
+[CheckoutService] --> [Order]
+[CheckoutService] --> [OrderItem]
+[CheckoutService] --> [Product]
+
+[ReturnService] --> [OrderStorage]
+[ReturnService] --> [InventoryService]
+[ReturnService] --> [PaymentService]
+[ReturnService] --> [Order]
+
+[InventoryService] --> [InventoryStorage]
+
+' Dependencies within Storage Layer
+[OrderStorage] --> [ProductStorage]
+[OrderStorage] --> [Order]
+[OrderStorage] --> [Product]
+
+[InventoryStorage] --> [ProductStorage]
+
+' Dependencies within Models Layer
+[Order] --> [OrderItem]
+[OrderItem] --> [Product]
+
+' Dependencies within UI Layer
+[CheckoutUI] --> [CheckoutService]
+[CheckoutUI] --> [ProductStorage]
+
+[ReturnUI] --> [ReturnService]
+
+note right of [UI Layer]
+  **2 modules:**
+  - CheckoutUI
+  - ReturnUI
+end note
+
+note right of [Services Layer]
+  **4 modules:**
+  - CheckoutService
+  - ReturnService
+  - InventoryService
+  - PaymentService
+end note
+
+note right of [Storage Layer]
+  **3 modules:**
+  - ProductStorage
+  - OrderStorage
+  - InventoryStorage
+end note
+
+note right of [Models Layer]
+  **3 modules:**
+  - Product
+  - Order
+  - OrderItem
+end note
+
+@enduml
+

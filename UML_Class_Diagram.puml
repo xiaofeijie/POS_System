@@ -1,0 +1,165 @@
+@startuml POS System Class Diagram
+
+' Models Layer
+package "Models" {
+    class Product {
+        +str product_id
+        +str name
+        +float price
+        +str? barcode
+        +str? category
+        +to_dict() : dict
+        +from_dict(data: dict) : Product
+    }
+    
+    class Order {
+        +str order_id
+        +List[OrderItem] items
+        +float total_amount
+        +str payment_method
+        +str payment_status
+        +str created_at
+        +str status
+        +calculate_total() : float
+        +to_dict() : dict
+        +from_dict(data: dict, products_dict: dict) : Order
+    }
+    
+    class OrderItem {
+        +Product product
+        +int quantity
+        +float unit_price
+        +subtotal : float {property}
+        +to_dict() : dict
+        +from_dict(data: dict, product: Product) : OrderItem
+    }
+}
+
+' Services Layer
+package "Services" {
+    class CheckoutService {
+        -ProductStorage product_storage
+        -OrderStorage order_storage
+        -InventoryService inventory_service
+        -PaymentService payment_service
+        -Order? current_order
+        +start_new_order() : Order
+        +add_item(product_id: str, quantity: int) : Tuple[bool, str]
+        +remove_item(product_id: str) : bool
+        +update_item_quantity(product_id: str, quantity: int) : Tuple[bool, str]
+        +get_current_total() : float
+        +process_payment(payment_method: str, paid_amount: float?) : Tuple[bool, str, dict]
+        +cancel_order()
+    }
+    
+    class ReturnService {
+        -OrderStorage order_storage
+        -InventoryService inventory_service
+        -PaymentService payment_service
+        +find_order(order_id: str) : Order?
+        +get_returnable_items(order: Order) : List[Dict]
+        +process_return(order_id: str, return_items: Dict[str, int], reason: str) : Tuple[bool, str, dict]
+    }
+    
+    class InventoryService {
+        -InventoryStorage storage
+        +get_stock(product_id: str) : int
+        +check_stock(product_id: str, quantity: int) : bool
+        +reduce_stock(product_id: str, quantity: int) : bool
+        +add_stock(product_id: str, quantity: int)
+        +set_stock(product_id: str, quantity: int)
+    }
+    
+    class PaymentService {
+        +List[str] VALID_PAYMENT_METHODS
+        +validate_payment_method(method: str) : bool
+        +validate_payment_info(method: str, amount: float, paid_amount: float?) : Tuple[bool, str]
+        +process_payment(method: str, amount: float, paid_amount: float?) : Dict
+    }
+}
+
+' Storage Layer
+package "Storage" {
+    class ProductStorage {
+        -str file_path
+        +load_all() : List[Product]
+        +save_all(products: List[Product])
+        +get_by_id(product_id: str) : Product?
+        +get_by_barcode(barcode: str) : Product?
+        +add(product: Product) : bool
+        +update(product: Product) : bool
+        +delete(product_id: str) : bool
+    }
+    
+    class OrderStorage {
+        -str file_path
+        -ProductStorage product_storage
+        +load_all() : List[Order]
+        +save_all(orders: List[Order])
+        +get_by_id(order_id: str) : Order?
+        +add(order: Order) : bool
+        +update(order: Order) : bool
+    }
+    
+    class InventoryStorage {
+        -str file_path
+        -ProductStorage product_storage
+        +load_all() : Dict[str, int]
+        +save_all(inventory: Dict[str, int])
+        +get_quantity(product_id: str) : int
+        +set_quantity(product_id: str, quantity: int)
+        +add_quantity(product_id: str, quantity: int)
+        +reduce_quantity(product_id: str, quantity: int) : bool
+        +has_stock(product_id: str, quantity: int) : bool
+    }
+}
+
+' UI Layer
+package "UI" {
+    class CheckoutUI {
+        -CheckoutService checkout_service
+        -ProductStorage product_storage
+        +display_current_order()
+        +scan_product() : bool
+        +process_payment()
+        +print_receipt(order: Order, payment_info: dict)
+        +run()
+    }
+    
+    class ReturnUI {
+        -ReturnService return_service
+        +display_order(order: Order)
+        +select_return_items(order: Order) : Dict[str, int]
+        +process_return()
+        +print_return_receipt(return_info: dict)
+        +run()
+    }
+}
+
+' Relationships
+Order "1" *-- "many" OrderItem : contains
+OrderItem "many" --> "1" Product : references
+
+CheckoutService --> ProductStorage : uses
+CheckoutService --> OrderStorage : uses
+CheckoutService --> InventoryService : uses
+CheckoutService --> PaymentService : uses
+CheckoutService --> Order : creates/manages
+
+ReturnService --> OrderStorage : uses
+ReturnService --> InventoryService : uses
+ReturnService --> PaymentService : uses
+ReturnService --> Order : processes
+
+InventoryService --> InventoryStorage : uses
+
+OrderStorage --> ProductStorage : uses
+InventoryStorage ..> ProductStorage : references
+
+CheckoutUI --> CheckoutService : uses
+CheckoutUI --> ProductStorage : uses
+
+ReturnUI --> ReturnService : uses
+
+@enduml
+

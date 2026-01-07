@@ -1,0 +1,4 @@
+# POS System Requirements
+# This project uses only Python standard library
+# No external dependencies required
+

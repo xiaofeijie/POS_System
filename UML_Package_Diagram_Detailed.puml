@@ -1,0 +1,99 @@
+@startuml POS System Package Diagram - Detailed
+
+skinparam packageStyle rectangle
+skinparam monochrome false
+
+package "UI Layer" <<layer>> #LightBlue {
+    package "CheckoutUI" {
+        [CheckoutUI]
+    }
+    package "ReturnUI" {
+        [ReturnUI]
+    }
+}
+
+package "Services Layer" <<layer>> #LightYellow {
+    package "CheckoutService" {
+        [CheckoutService]
+    }
+    package "ReturnService" {
+        [ReturnService]
+    }
+    package "InventoryService" {
+        [InventoryService]
+    }
+    package "PaymentService" {
+        [PaymentService]
+    }
+}
+
+package "Storage Layer" <<layer>> #LightGreen {
+    package "ProductStorage" {
+        [ProductStorage]
+    }
+    package "OrderStorage" {
+        [OrderStorage]
+    }
+    package "InventoryStorage" {
+        [InventoryStorage]
+    }
+}
+
+package "Models Layer" <<layer>> #LightPink {
+    package "Product" {
+        [Product]
+    }
+    package "Order" {
+        [Order]
+    }
+    package "OrderItem" {
+        [OrderItem]
+    }
+}
+
+' Layer dependencies
+[UI Layer] ..> [Services Layer] : uses
+[Services Layer] ..> [Storage Layer] : uses
+[Services Layer] ..> [Models Layer] : uses
+[Storage Layer] ..> [Models Layer] : uses
+
+' Module dependencies
+[CheckoutUI] --> [CheckoutService]
+[CheckoutUI] --> [ProductStorage]
+[ReturnUI] --> [ReturnService]
+
+[CheckoutService] --> [ProductStorage]
+[CheckoutService] --> [OrderStorage]
+[CheckoutService] --> [InventoryService]
+[CheckoutService] --> [PaymentService]
+[CheckoutService] --> [Order]
+[CheckoutService] --> [OrderItem]
+[CheckoutService] --> [Product]
+
+[ReturnService] --> [OrderStorage]
+[ReturnService] --> [InventoryService]
+[ReturnService] --> [PaymentService]
+[ReturnService] --> [Order]
+
+[InventoryService] --> [InventoryStorage]
+
+[OrderStorage] --> [ProductStorage]
+[OrderStorage] --> [Order]
+[OrderStorage] --> [Product]
+
+[InventoryStorage] -.-> [ProductStorage]
+
+[Order] --> [OrderItem]
+[OrderItem] --> [Product]
+
+legend right
+    |<#LightBlue> UI Layer |
+    |<#LightYellow> Services Layer |
+    |<#LightGreen> Storage Layer |
+    |<#LightPink> Models Layer |
+    |---> Dependency |
+    |-.-> Reference |
+endlegend
+
+@enduml
+

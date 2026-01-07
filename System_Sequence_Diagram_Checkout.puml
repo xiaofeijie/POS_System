@@ -1,0 +1,77 @@
+@startuml System Sequence Diagram - Checkout
+
+actor Cashier
+actor Customer
+participant "CheckoutUI" as UI
+participant "CheckoutService" as Service
+participant "ProductStorage" as PStorage
+participant "InventoryService" as InvService
+participant "PaymentService" as PayService
+participant "OrderStorage" as OStorage
+
+== Scan and Add Products ==
+Cashier -> UI: Enter product ID/barcode
+activate UI
+UI -> PStorage: get_by_id(product_id)
+activate PStorage
+PStorage --> UI: Product
+deactivate PStorage
+UI -> UI: Display product info
+UI -> Cashier: Prompt for quantity
+Cashier -> UI: Enter quantity
+UI -> Service: add_item(product_id, quantity)
+activate Service
+Service -> PStorage: get_by_id(product_id)
+activate PStorage
+PStorage --> Service: Product
+deactivate PStorage
+Service -> InvService: check_stock(product_id, quantity)
+activate InvService
+InvService --> Service: true/false
+deactivate InvService
+alt Stock available
+    Service -> Service: Create/update OrderItem
+    Service -> Service: calculate_total()
+    Service --> UI: (success, message)
+    UI -> UI: display_current_order()
+    UI --> Cashier: Show order details
+else Insufficient stock
+    Service --> UI: (failure, error message)
+    UI --> Cashier: Display error
+end
+deactivate Service
+deactivate UI
+
+== Process Payment ==
+Cashier -> UI: Finish adding items
+UI -> UI: display_current_order()
+UI --> Cashier: Show order total
+Cashier -> UI: Select payment method
+UI -> Customer: Request payment info
+Customer -> UI: Provide payment method/amount
+UI -> Service: process_payment(method, paid_amount)
+activate Service
+Service -> PayService: process_payment(method, amount, paid_amount)
+activate PayService
+PayService -> PayService: validate_payment_info()
+PayService --> Service: payment_info
+deactivate PayService
+Service -> Service: Update order payment status
+loop For each item
+    Service -> InvService: reduce_stock(product_id, quantity)
+    activate InvService
+    InvService --> Service: success
+    deactivate InvService
+end
+Service -> OStorage: add(order)
+activate OStorage
+OStorage --> Service: success
+deactivate OStorage
+Service --> UI: (success, order, payment_info)
+deactivate Service
+UI -> UI: print_receipt(order, payment_info)
+UI --> Cashier: Display receipt
+UI --> Customer: Receipt
+
+@enduml
+
