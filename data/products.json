@@ -1,0 +1,58 @@
+[
+  {
+    "product_id": "P001",
+    "name": "可口可乐",
+    "price": 3.5,
+    "barcode": "6901234567890",
+    "category": "饮料"
+  },
+  {
+    "product_id": "P002",
+    "name": "百事可乐",
+    "price": 3.5,
+    "barcode": "6901234567891",
+    "category": "饮料"
+  },
+  {
+    "product_id": "P003",
+    "name": "康师傅方便面",
+    "price": 5.0,
+    "barcode": "6901234567892",
+    "category": "食品"
+  },
+  {
+    "product_id": "P004",
+    "name": "统一方便面",
+    "price": 5.0,
+    "barcode": "6901234567893",
+    "category": "食品"
+  },
+  {
+    "product_id": "P005",
+    "name": "蒙牛纯牛奶",
+    "price": 12.0,
+    "barcode": "6901234567894",
+    "category": "乳制品"
+  },
+  {
+    "product_id": "P006",
+    "name": "伊利纯牛奶",
+    "price": 12.0,
+    "barcode": "6901234567895",
+    "category": "乳制品"
+  },
+  {
+    "product_id": "P007",
+    "name": "奥利奥饼干",
+    "price": 8.5,
+    "barcode": "6901234567896",
+    "category": "零食"
+  },
+  {
+    "product_id": "P008",
+    "name": "乐事薯片",
+    "price": 6.0,
+    "barcode": "6901234567897",
+    "category": "零食"
+  }
+]

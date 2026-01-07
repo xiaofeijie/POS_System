@@ -22,8 +22,8 @@ wheels/
 
 # Virtual Environment
 venv/
-ENV/
 env/
+ENV/
 .venv
 
 # IDE
@@ -33,15 +33,16 @@ env/
 *.swo
 *~
 
+# Data files (optional - uncomment if you don't want to track data)
+# data/
+# *.json
+
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
 # Project specific
-data/*.json
-!data/.gitkeep
-
-# Logs
 *.log
+*.tmp
 
