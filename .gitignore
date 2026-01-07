@@ -38,7 +38,7 @@ env/
 Thumbs.db
 desktop.ini
 
-# Project specific
+# Project specific - ignore data files but keep directory
 data/*.json
 !data/.gitkeep
 
