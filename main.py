@@ -3,6 +3,7 @@ POS System - Main Entry Point
 """
 from ui.checkout_ui import CheckoutUI
 from ui.return_ui import ReturnUI
+from ui.inventory_ui import InventoryUI
 from storage.product_storage import ProductStorage
 from storage.inventory_storage import InventoryStorage
 
@@ -51,7 +52,8 @@ def show_main_menu():
     print("="*60)
     print("1. Checkout")
     print("2. Return")
-    print("3. Exit")
+    print("3. View Inventory")
+    print("4. Exit")
     print("="*60)
 
 
@@ -65,10 +67,11 @@ def main():
     
     checkout_ui = CheckoutUI()
     return_ui = ReturnUI()
+    inventory_ui = InventoryUI()
     
     while True:
         show_main_menu()
-        choice = input("Please select an option (1-3): ").strip()
+        choice = input("Please select an option (1-4): ").strip()
         
         if choice == '1':
             try:
@@ -87,6 +90,14 @@ def main():
                 print(f"\nError occurred: {e}")
         
         elif choice == '3':
+            try:
+                inventory_ui.run()
+            except KeyboardInterrupt:
+                print("\n\nOperation cancelled")
+            except Exception as e:
+                print(f"\nError occurred: {e}")
+        
+        elif choice == '4':
             print("\nThank you for using POS System. Goodbye!")
             break
         
