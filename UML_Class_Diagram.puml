@@ -78,10 +78,23 @@ package "Services" {
     }
 }
 
+' Database Layer
+package "Database" {
+    class DatabaseConnection {
+        -str db_path
+        +get_connection() : sqlite3.Connection
+        +get_cursor() : contextmanager
+        +execute(query: str, params: tuple) : cursor
+        +execute_many(query: str, params_list: list) : cursor
+        +fetch_one(query: str, params: tuple) : Row?
+        +fetch_all(query: str, params: tuple) : list
+    }
+}
+
 ' Storage Layer
 package "Storage" {
     class ProductStorage {
-        -str file_path
+        -DatabaseConnection db
         +load_all() : List[Product]
         +save_all(products: List[Product])
         +get_by_id(product_id: str) : Product?
@@ -92,7 +105,7 @@ package "Storage" {
     }
     
     class OrderStorage {
-        -str file_path
+        -DatabaseConnection db
         -ProductStorage product_storage
         +load_all() : List[Order]
         +save_all(orders: List[Order])
@@ -102,7 +115,7 @@ package "Storage" {
     }
     
     class InventoryStorage {
-        -str file_path
+        -DatabaseConnection db
         -ProductStorage product_storage
         +load_all() : Dict[str, int]
         +save_all(inventory: Dict[str, int])
@@ -153,7 +166,10 @@ ReturnService --> Order : processes
 
 InventoryService --> InventoryStorage : uses
 
+ProductStorage --> DatabaseConnection : uses
+OrderStorage --> DatabaseConnection : uses
 OrderStorage --> ProductStorage : uses
+InventoryStorage --> DatabaseConnection : uses
 InventoryStorage ..> ProductStorage : references
 
 CheckoutUI --> CheckoutService : uses

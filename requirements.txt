@@ -1,4 +1,6 @@
 # POS System Requirements
-# This project uses only Python standard library
-# No external dependencies required
+# Python 3.7+
+
+# Database
+# SQLite is included in Python standard library, no additional package needed
 

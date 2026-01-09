@@ -22,6 +22,10 @@ graph TB
         InventoryStorage[InventoryStorage]
     end
     
+    subgraph "Database Layer (1 module)"
+        DatabaseConnection[DatabaseConnection]
+    end
+    
     subgraph "Models Layer (3 modules)"
         Product[Product]
         Order[Order]
@@ -41,7 +45,10 @@ graph TB
     ReturnService --> PaymentService
     InventoryService --> InventoryStorage
     
+    ProductStorage --> DatabaseConnection
+    OrderStorage --> DatabaseConnection
     OrderStorage --> ProductStorage
+    InventoryStorage --> DatabaseConnection
     InventoryStorage -.-> ProductStorage
     
     CheckoutService --> Order
@@ -63,6 +70,7 @@ graph TB
     style ProductStorage fill:#e8f5e9
     style OrderStorage fill:#e8f5e9
     style InventoryStorage fill:#e8f5e9
+    style DatabaseConnection fill:#fff9c4
     style Product fill:#f3e5f5
     style Order fill:#f3e5f5
     style OrderItem fill:#f3e5f5
@@ -81,11 +89,18 @@ graph TB
 - **PaymentService**: Validates and processes payments
 
 ### 3. Storage Layer (3 modules)
-- **ProductStorage**: Persists product data (JSON)
-- **OrderStorage**: Persists order data (JSON)
-- **InventoryStorage**: Persists inventory data (JSON)
+- **ProductStorage**: Manages product data operations
+- **OrderStorage**: Manages order data operations
+- **InventoryStorage**: Manages inventory data operations
 
-### 4. Models Layer (3 modules)
+**Dependencies**: Database Layer, Models Layer
+
+### 4. Database Layer (1 module)
+- **DatabaseConnection**: Manages SQLite database connections and queries
+
+**Dependencies**: None (infrastructure layer)
+
+### 5. Models Layer (3 modules)
 - **Product**: Product data model
 - **Order**: Order data model
 - **OrderItem**: Order item data model
@@ -94,8 +109,9 @@ graph TB
 
 1. **UI Layer** depends only on **Services Layer**
 2. **Services Layer** depends on **Storage Layer** and **Models Layer**
-3. **Storage Layer** depends on **Models Layer**
-4. **Models Layer** has no dependencies (base layer)
+3. **Storage Layer** depends on **Database Layer** and **Models Layer**
+4. **Database Layer** has no dependencies (infrastructure layer)
+5. **Models Layer** has no dependencies (base layer)
 
 ## Architecture Pattern
 

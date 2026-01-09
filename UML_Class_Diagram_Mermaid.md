@@ -76,9 +76,20 @@ classDiagram
         +process_payment(method, amount, paid_amount) Dict
     }
     
+    %% Database Layer
+    class DatabaseConnection {
+        -str db_path
+        +get_connection() Connection
+        +get_cursor() contextmanager
+        +execute(query, params) cursor
+        +execute_many(query, params_list) cursor
+        +fetch_one(query, params) Row
+        +fetch_all(query, params) list
+    }
+    
     %% Storage Layer
     class ProductStorage {
-        -str file_path
+        -DatabaseConnection db
         +load_all() List~Product~
         +save_all(products)
         +get_by_id(product_id) Product
@@ -89,7 +100,7 @@ classDiagram
     }
     
     class OrderStorage {
-        -str file_path
+        -DatabaseConnection db
         -ProductStorage product_storage
         +load_all() List~Order~
         +save_all(orders)
@@ -99,7 +110,7 @@ classDiagram
     }
     
     class InventoryStorage {
-        -str file_path
+        -DatabaseConnection db
         -ProductStorage product_storage
         +load_all() Dict
         +save_all(inventory)
@@ -147,7 +158,10 @@ classDiagram
     
     InventoryService --> InventoryStorage : uses
     
+    ProductStorage --> DatabaseConnection : uses
+    OrderStorage --> DatabaseConnection : uses
     OrderStorage --> ProductStorage : uses
+    InventoryStorage --> DatabaseConnection : uses
     InventoryStorage ..> ProductStorage : references
     
     CheckoutUI --> CheckoutService : uses

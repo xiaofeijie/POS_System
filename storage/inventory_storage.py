@@ -1,55 +1,52 @@
 """
-Inventory Storage - JSON file storage for inventory
+Inventory Storage - SQLite database storage for inventory
 """
-import json
-import os
 from typing import Dict
+from database.db_connection import DatabaseConnection
 from storage.product_storage import ProductStorage
 
 
 class InventoryStorage:
-    """Inventory storage using JSON file"""
+    """Inventory storage using SQLite database"""
     
-    def __init__(self, file_path: str = "data/inventory.json"):
+    def __init__(self, db: DatabaseConnection = None):
         """Initialize inventory storage"""
-        self.file_path = file_path
-        self.product_storage = ProductStorage()
-        self._ensure_data_dir()
-        self._ensure_file()
-    
-    def _ensure_data_dir(self):
-        """Ensure data directory exists"""
-        os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
-    
-    def _ensure_file(self):
-        """Ensure JSON file exists"""
-        if not os.path.exists(self.file_path):
-            with open(self.file_path, 'w', encoding='utf-8') as f:
-                json.dump({}, f, ensure_ascii=False, indent=2)
+        self.db = db or DatabaseConnection()
+        self.product_storage = ProductStorage(self.db)
     
     def load_all(self) -> Dict[str, int]:
-        """Load all inventory from file"""
-        try:
-            with open(self.file_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return {}
-    
-    def save_all(self, inventory: Dict[str, int]):
-        """Save all inventory to file"""
-        with open(self.file_path, 'w', encoding='utf-8') as f:
-            json.dump(inventory, f, ensure_ascii=False, indent=2)
+        """Load all inventory from database"""
+        rows = self.db.fetch_all("SELECT product_id, quantity FROM inventory")
+        return {row['product_id']: row['quantity'] for row in rows}
     
     def get_quantity(self, product_id: str) -> int:
         """Get inventory quantity for a product"""
-        inventory = self.load_all()
-        return inventory.get(product_id, 0)
+        row = self.db.fetch_one(
+            "SELECT quantity FROM inventory WHERE product_id = ?",
+            (product_id,)
+        )
+        return row['quantity'] if row else 0
     
     def set_quantity(self, product_id: str, quantity: int):
         """Set inventory quantity for a product"""
-        inventory = self.load_all()
-        inventory[product_id] = max(0, quantity)  # Ensure non-negative
-        self.save_all(inventory)
+        quantity = max(0, quantity)  # Ensure non-negative
+        
+        # Check if record exists
+        existing = self.db.fetch_one(
+            "SELECT product_id FROM inventory WHERE product_id = ?",
+            (product_id,)
+        )
+        
+        if existing:
+            self.db.execute(
+                "UPDATE inventory SET quantity = ? WHERE product_id = ?",
+                (quantity, product_id)
+            )
+        else:
+            self.db.execute(
+                "INSERT INTO inventory (product_id, quantity) VALUES (?, ?)",
+                (product_id, quantity)
+            )
     
     def add_quantity(self, product_id: str, quantity: int):
         """Add quantity to inventory"""
@@ -67,4 +64,14 @@ class InventoryStorage:
     def has_stock(self, product_id: str, quantity: int) -> bool:
         """Check if there is enough stock"""
         return self.get_quantity(product_id) >= quantity
-
+    
+    def save_all(self, inventory: Dict[str, int]):
+        """Save all inventory (useful for migration)"""
+        # Clear existing inventory
+        self.db.execute("DELETE FROM inventory")
+        # Insert all inventory records
+        if inventory:
+            self.db.execute_many(
+                "INSERT INTO inventory (product_id, quantity) VALUES (?, ?)",
+                [(product_id, qty) for product_id, qty in inventory.items()]
+            )

@@ -38,6 +38,12 @@ package "Storage Layer" <<layer>> {
     }
 }
 
+package "Database Layer" <<layer>> {
+    package "DatabaseConnection" {
+        class DatabaseConnection
+    }
+}
+
 package "Models Layer" <<layer>> {
     package "Product" {
         class Product
@@ -54,7 +60,9 @@ package "Models Layer" <<layer>> {
 [UI Layer] --> [Services Layer] : depends on
 [Services Layer] --> [Storage Layer] : depends on
 [Services Layer] --> [Models Layer] : depends on
+[Storage Layer] --> [Database Layer] : depends on
 [Storage Layer] --> [Models Layer] : depends on
+[Database Layer] --> [Models Layer] : supports
 
 ' Dependencies within Services Layer
 [CheckoutService] --> [ProductStorage]
@@ -73,10 +81,13 @@ package "Models Layer" <<layer>> {
 [InventoryService] --> [InventoryStorage]
 
 ' Dependencies within Storage Layer
+[ProductStorage] --> [DatabaseConnection]
+[OrderStorage] --> [DatabaseConnection]
 [OrderStorage] --> [ProductStorage]
 [OrderStorage] --> [Order]
 [OrderStorage] --> [Product]
 
+[InventoryStorage] --> [DatabaseConnection]
 [InventoryStorage] --> [ProductStorage]
 
 ' Dependencies within Models Layer

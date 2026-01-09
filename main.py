@@ -9,6 +9,11 @@ from storage.inventory_storage import InventoryStorage
 
 def initialize_sample_data():
     """Initialize sample products and inventory for testing"""
+    from database.schema import init_database
+    
+    # Initialize database
+    init_database()
+    
     product_storage = ProductStorage()
     inventory_storage = InventoryStorage()
     

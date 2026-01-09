@@ -2,7 +2,7 @@
 
 ## System Architecture Overview
 
-The POS System follows a **4-layer architecture** with **12 modules** in total:
+The POS System follows a **5-layer architecture** with **13 modules** in total:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -33,6 +33,14 @@ The POS System follows a **4-layer architecture** with **12 modules** in total:
 │  ┌──────────────┐                      │
 │  │  Inventory   │                      │
 │  │  Storage     │                      │
+│  └──────────────┘                      │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│     Database Layer (1 module)           │
+│  ┌──────────────┐                      │
+│  │  Database    │                      │
+│  │  Connection  │                      │
 │  └──────────────┘                      │
 └─────────────────────────────────────────┘
                     ↓
@@ -76,19 +84,30 @@ The POS System follows a **4-layer architecture** with **12 modules** in total:
 ---
 
 ### Layer 3: Storage Layer (3 modules)
-**Responsibility**: Data persistence
+**Responsibility**: Data persistence abstraction
 
 | Module | Purpose |
 |--------|---------|
-| ProductStorage | Stores product data (JSON) |
-| OrderStorage | Stores order data (JSON) |
-| InventoryStorage | Stores inventory data (JSON) |
+| ProductStorage | Manages product data operations |
+| OrderStorage | Manages order data operations |
+| InventoryStorage | Manages inventory data operations |
 
-**Dependencies**: Models Layer
+**Dependencies**: Database Layer, Models Layer
 
 ---
 
-### Layer 4: Models Layer (3 modules)
+### Layer 4: Database Layer (1 module)
+**Responsibility**: Database connection and query execution
+
+| Module | Purpose |
+|--------|---------|
+| DatabaseConnection | Manages SQLite database connections and queries |
+
+**Dependencies**: None (infrastructure layer)
+
+---
+
+### Layer 5: Models Layer (3 modules)
 **Responsibility**: Data structures
 
 | Module | Purpose |
@@ -106,8 +125,9 @@ The POS System follows a **4-layer architecture** with **12 modules** in total:
 | UI Layer | 2 | CheckoutUI, ReturnUI |
 | Services Layer | 4 | CheckoutService, ReturnService, InventoryService, PaymentService |
 | Storage Layer | 3 | ProductStorage, OrderStorage, InventoryStorage |
+| Database Layer | 1 | DatabaseConnection |
 | Models Layer | 3 | Product, Order, OrderItem |
-| **Total** | **12** | |
+| **Total** | **13** | |
 
 ## Dependency Flow
 
@@ -118,6 +138,8 @@ Services Layer
   ↓ (depends on)
 Storage Layer + Models Layer
   ↓ (Storage depends on)
+Database Layer
+  ↓ (supports)
 Models Layer
 ```
 
